@@ -1,25 +1,44 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { Http } from "@angular/http";
-import { NgZone } from "@angular/core";
+import * as io from "socket.io-client";
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
+
+
 export class HomePage {
   messages: string[] = ['something'];
-  chatBox = "";
-  constructor(public navCtrl: NavController) {
+  chatBox: any = "";
+  httpHost: string = "http://192.168.0.131:3000";
+  socketHost: string = "http://192.168.0.131:3000";
+  socket: any = null;
+  constructor(public navCtrl: NavController, public http: Http) {
     this.messages = [];
-    this.messages.push("msg 1")
-    this.messages.push("msg 2")
-    this.chatBox = "type your message here...";
+
+    this.http.get(this.httpHost + "/fetch").subscribe((success) => {
+      var data = success.json();
+      for(var i = 0; i < data.length; i++) {
+          this.messages.push(data[i].message);
+      }
+     }, (error) => {
+      console.log(JSON.stringify(error));
+     });
+    this.chatBox = "";
+
+    this.socket = io(this.socketHost);  
+
+    this.socket.on("chat_message", (id, msg) => {
+      this.messages.push(msg);
+    });    
   }
+
   send(message) {
     if(message && message != "") {
-        this.messages.push(message);
-        //this.socket.emit("chat_message", message);
+        //this.messages.push(message);
+        this.socket.emit("chat_message", 'myself', message);
     }
     this.chatBox = "";
 }
