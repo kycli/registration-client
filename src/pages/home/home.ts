@@ -20,8 +20,11 @@ export class HomePage {
 
     this.http.get(this.httpHost + "/fetch").subscribe((success) => {
       var data = success.json();
-      for(var i = 0; i < data.length; i++) {
-          this.messages.push(data[i].message);
+      console.log(JSON.stringify(data));
+      if (data.length != 0){
+        for(var i = 0; i < data[0].sessionContent.length; i++) {
+            this.messages.push(data[0].sessionContent[i].msgContent);
+        }
       }
      }, (error) => {
       console.log(JSON.stringify(error));
@@ -38,7 +41,7 @@ export class HomePage {
   send(message) {
     if(message && message != "") {
         //this.messages.push(message);
-        this.socket.emit("chat_message", 'myself', message);
+        this.socket.emit("chat_message", 'self', message);
     }
     this.chatBox = "";
 }
